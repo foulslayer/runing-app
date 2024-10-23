@@ -8,6 +8,8 @@ export default function App() {
   const [pastStepCount, setPastStepCount] = useState(0);
   const [currentStepCount, setCurrentStepCount] = useState(0);
   const [averageSpeed, setAverageSpeed] = useState(0);
+  const [currentSpeed, setCurrentSpeed] = useState(0);
+  const [topspeed, setTopspeed] = useState(0);
 
   const STRIDE_LENGTH_METERS = 0.8; // Average stride length
   const SECONDS_IN_HOUR = 3600; // Seconds in one hour for speed calculation
@@ -26,6 +28,11 @@ export default function App() {
   const stopTimer = () => setIsRunning(false);
   const resetTimer = () => {
     setIsRunning(false);
+    setAverageSpeed(0);
+    setCurrentSpeed(0);
+    setTopspeed(0);
+    setPastStepCount(0);
+    setCurrentStepCount(0);
     setSeconds(0);
   };
 
@@ -60,11 +67,11 @@ export default function App() {
     return null;
   };
 
-  // Function to update past step count (last 24 hours)
+  // Function to update past step count (last 10 secconds))
   const updatePastStepCount = async () => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 1); // Set start date to 24 hours ago
+    const end = new Date(); // Current time
+    const start = new Date(end); // Create a copy of the end date
+    start.setSeconds(start.getSeconds() - 10); // Set start date to 10 seconds ago
 
     const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
     if (pastStepCountResult) {
@@ -82,8 +89,6 @@ export default function App() {
     return speed;
   };*/
 
-  const Topspeed = () => {};
-
   // Effect to update average speed based on current step count and seconds
   useEffect(() => {
     console.log("Current Step Count:", currentStepCount); // Log current step count
@@ -92,6 +97,13 @@ export default function App() {
     if (seconds > 0 && currentStepCount > 0) {
       const speed = ((stepsToMeters(currentStepCount) / seconds) * SECONDS_IN_HOUR) / 1000; // Calculate speed in km/h. we divide by 1000 to convert to km/h
       setAverageSpeed(speed);
+      const currentspeed = (stepsToMeters(pastStepCount / 10) * SECONDS_IN_HOUR) / 1000; // Convert to km/h
+      setCurrentSpeed(currentspeed);
+
+      if (currentSpeed > topspeed) {
+        setTopspeed(currentSpeed);
+      }
+
       console.log("Average Speed:", speed); // Log average speed
     } else {
       setAverageSpeed(0);
@@ -105,8 +117,10 @@ export default function App() {
     };
     setupSubscription(); // Call subscription when the component mounts
 
-    // Update past step count every 10 seconds
-    const interval = setInterval(updatePastStepCount, 10000);
+    // Update past step count every 5 seconds
+    const interval = setInterval(() => {
+      updatePastStepCount();
+    }, 5000);
 
     // Cleanup on component unmount
     return () => {
@@ -117,16 +131,14 @@ export default function App() {
     };
   }, []);
 
-  console.log("isPedometerAvailable", isPedometerAvailable);
-  console.log("pastStepCount", pastStepCount);
-  console.log("currentStepCount", currentStepCount);
-
   return (
     <View style={styles.container}>
       <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
-      {/* <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>*/}
+      <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>
       <Text>Walk! And watch this go up: {currentStepCount}</Text>
       <Text>Average Speed: {averageSpeed.toFixed(2)} km/h</Text>
+      <Text>current Speed: {currentSpeed.toFixed(2)} km/h</Text>
+      <Text>Top Speed: {topspeed.toFixed(2)} km/h</Text>
       <Timer seconds={seconds} isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer} resetTimer={resetTimer} />
     </View>
   );
