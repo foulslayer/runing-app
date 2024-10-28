@@ -11,33 +11,12 @@ const timer = ({ seconds, isRunning, startTimer, stopTimer, resetTimer }) => {
   );
 };
 
-/*
-useEffect(() => {
-  let interval;
-  if (isRunning) {
-    interval = setInterval(() => {
-      setSeconds((prevSeconds) => prevSeconds + 1);
-    }, 1000);
-  }
-
-  // Cleanup interval when the component unmounts or timer stops
-  return () => clearInterval(interval);
-}, [isRunning]); // Only re-run this effect when `isRunning` changes
-
-const handleStartStop = () => {
-  setIsRunning(!isRunning); // Toggle between start and stop
-};
-
-const handleReset = () => {
-  setIsRunning(false);
-  setSeconds(0); // Reset timer
-};*/
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    display: "flex",
     justifyContent: "center",
     alignItems: "center",
+
     backgroundColor: "#f5fcff",
   },
   timerText: {

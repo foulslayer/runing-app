@@ -1,95 +1,99 @@
-import { useState, useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, Text, View, Button, Platform } from "react-native";
 import { Pedometer } from "expo-sensors";
 import Timer from "./components/timer";
+import { Video } from "expo-av";
+import runner from "./assets/27756690_MotionElements_runner-enjoy-run-sunny-day_preview.mp4";
 
 export default function App() {
+  const video = useRef(null);
+  const [status, setStatus] = useState({});
+
   const [isPedometerAvailable, setIsPedometerAvailable] = useState("checking");
   const [pastStepCount, setPastStepCount] = useState(0);
   const [currentStepCount, setCurrentStepCount] = useState(0);
   const [averageSpeed, setAverageSpeed] = useState(0);
   const [currentSpeed, setCurrentSpeed] = useState(0);
   const [topspeed, setTopspeed] = useState(0);
-
   const STRIDE_LENGTH_METERS = 0.8; // Average stride length
   const SECONDS_IN_HOUR = 3600; // Seconds in one hour for speed calculation
+  const previousStepCount = useRef(0); // use for android
 
-  // Calculate distance in meters
-  const stepsToMeters = (steps) => {
-    return steps * STRIDE_LENGTH_METERS;
+  // Timer state
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [subscription, setSubscription] = useState(null); // Store subscription
+
+  // Start timer and pedometer
+  const startTimer = async () => {
+    setIsRunning(true);
+
+    // Subscribe to step count updates
+    const isAvailable = await Pedometer.isAvailableAsync();
+    setIsPedometerAvailable(String(isAvailable));
+
+    if (isAvailable) {
+      const subscription = Pedometer.watchStepCount((result) => {
+        setCurrentStepCount(result.steps);
+      });
+      setSubscription(subscription);
+
+      // Initial past step count update
+      updatePastStepCount();
+    }
   };
 
-  /////////////////////////////// // Timer state and logic////////////////////////////////////////////////////
-  const [seconds, setSeconds] = useState(0); // Track time in App.js
-  const [isRunning, setIsRunning] = useState(false); // Track if timer is running
-
-  // Timer control functions
-  const startTimer = () => setIsRunning(true);
-  const stopTimer = () => setIsRunning(false);
-  const resetTimer = () => {
+  // Stop timer and pedometer
+  const stopTimer = () => {
     setIsRunning(false);
+    if (subscription) {
+      subscription.remove(); // Unsubscribe from pedometer
+      setSubscription(null);
+    }
+  };
+
+  // Reset timer and states
+  const resetTimer = () => {
+    stopTimer();
+    setSeconds(0);
     setAverageSpeed(0);
     setCurrentSpeed(0);
     setTopspeed(0);
     setPastStepCount(0);
     setCurrentStepCount(0);
-    setSeconds(0);
   };
 
-  // Timer effect
+  // Update past step count (last 5 seconds)
+  const updatePastStepCount = async () => {
+    if (Platform.OS === "ios") {
+      const end = new Date(); // Current time
+      const start = new Date(end);
+      start.setSeconds(start.getSeconds() - 5);
+
+      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+      if (pastStepCountResult) {
+        setPastStepCount(pastStepCountResult.steps);
+      }
+    } else if (Platform.OS === "android") {
+      const stepsTakenInLast5Seconds = currentStepCount - previousStepCount.current;
+      console.log("Steps taken in last 5 seconds (Android):", stepsTakenInLast5Seconds);
+      ("");
+      setPastStepCount(stepsTakenInLast5Seconds.steps);
+
+      // Update the previous step count for the next interval
+      previousStepCount.current = currentStepCount;
+    }
+  };
+
   useEffect(() => {
     let interval;
     if (isRunning) {
-      interval = setInterval(() => {
-        setSeconds((prevSeconds) => prevSeconds + 1); // Increment seconds
-      }, 1000);
+      interval = setInterval(updatePastStepCount, 5000); // Update every 5 seconds
     }
 
-    // Cleanup interval when the component unmounts or timer stops
     return () => clearInterval(interval);
-  }, [isRunning]); // Only re-run this effect when `isRunning` changes
+  }, [isRunning]);
 
-  /////////////////////////////// // Timer state and logic////////////////////////////////////////////////////
-
-  // Function to subscribe to step counting
-  const subscribe = async () => {
-    const isAvailable = await Pedometer.isAvailableAsync();
-    setIsPedometerAvailable(String(isAvailable));
-
-    if (isAvailable) {
-      updatePastStepCount(); // Initial past step count update
-
-      // Watch current step count in real time
-      return Pedometer.watchStepCount((result) => {
-        setCurrentStepCount(result.steps);
-      });
-    }
-    return null;
-  };
-
-  // Function to update past step count (last 10 secconds))
-  const updatePastStepCount = async () => {
-    const end = new Date(); // Current time
-    const start = new Date(end); // Create a copy of the end date
-    start.setSeconds(start.getSeconds() - 10); // Set start date to 10 seconds ago
-
-    const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
-    if (pastStepCountResult) {
-      setPastStepCount(pastStepCountResult.steps);
-    }
-  };
-
-  // Calculate current speed (steps in the last 10 seconds)
-  /* const currentSpeed = () => {
-    const timeIntervalInSeconds = 10;
-    const stepsInLastInterval = (currentStepCount - pastStepCount);
-    const distance = stepsToMeters(stepsInLastInterval);
-    const speed = (distance / timeIntervalInSeconds) * SECONDS_IN_HOUR; // Convert to meters/hour
-
-    return speed;
-  };*/
-
-  // Effect to update average speed based on current step count and seconds
   useEffect(() => {
     console.log("Current Step Count:", currentStepCount); // Log current step count
     console.log("Seconds:", seconds); // Log elapsed seconds
@@ -97,48 +101,62 @@ export default function App() {
     if (seconds > 0 && currentStepCount > 0) {
       const speed = ((stepsToMeters(currentStepCount) / seconds) * SECONDS_IN_HOUR) / 1000; // Calculate speed in km/h. we divide by 1000 to convert to km/h
       setAverageSpeed(speed);
-      const currentspeed = (stepsToMeters(pastStepCount / 10) * SECONDS_IN_HOUR) / 1000; // Convert to km/h
-      setCurrentSpeed(currentspeed);
+      const currentspeed = (stepsToMeters(pastStepCount / 5) * SECONDS_IN_HOUR) / 1000; // Convert to km/h
 
+      setCurrentSpeed(currentspeed);
       if (currentSpeed > topspeed) {
         setTopspeed(currentSpeed);
       }
-
       console.log("Average Speed:", speed); // Log average speed
     } else {
       setAverageSpeed(0);
     }
   }, [currentStepCount, seconds]);
 
+  // Timer effect
   useEffect(() => {
-    let subscription;
-    const setupSubscription = async () => {
-      subscription = await subscribe();
-    };
-    setupSubscription(); // Call subscription when the component mounts
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setSeconds((prev) => prev + 1); // Increment seconds
+      }, 1000);
+    }
 
-    // Update past step count every 5 seconds
-    const interval = setInterval(() => {
-      updatePastStepCount();
-    }, 5000);
-
-    // Cleanup on component unmount
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-      clearInterval(interval); // Clear interval on unmount
-    };
-  }, []);
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [isRunning]);
 
   return (
     <View style={styles.container}>
-      <Text>Pedometer.isAvailableAsync(): {isPedometerAvailable}</Text>
-      <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>
-      <Text>Walk! And watch this go up: {currentStepCount}</Text>
-      <Text>Average Speed: {averageSpeed.toFixed(2)} km/h</Text>
-      <Text>current Speed: {currentSpeed.toFixed(2)} km/h</Text>
-      <Text>Top Speed: {topspeed.toFixed(2)} km/h</Text>
+      {/* Information Display */}
+      <View style={styles.infoContainer}>
+        <View style={styles.item}>
+          <Text>
+            Distance: {"\n"} {stepsToMeters(currentStepCount).toFixed(0)} m
+          </Text>
+        </View>
+        <View style={styles.item}>
+          <Text>
+            Average Speed: {"\n"} {averageSpeed.toFixed(2)} km/h
+          </Text>
+        </View>
+        <View style={styles.item}>
+          <Text>
+            Current Speed:{"\n"} {currentSpeed.toFixed(2)} km/h
+          </Text>
+        </View>
+        <View style={styles.item}>
+          <Text>
+            Top Speed: {"\n"} {topspeed.toFixed(2)} km/h
+          </Text>
+        </View>
+      </View>
+
+      {/* Video Player */}
+      <View style={styles.videoContainer}>
+        <Video ref={video} style={styles.video} source={runner} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
+      </View>
+
+      {/* Timer */}
       <Timer seconds={seconds} isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer} resetTimer={resetTimer} />
     </View>
   );
@@ -146,9 +164,39 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 20,
     flex: 1,
-    marginTop: 15,
+    justifyContent: "flex-start",
     alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#f5fcff",
+  },
+  videoContainer: {
+    width: "100%",
+    height: 200,
+  },
+  video: {
+    width: "100%",
+    height: "100%",
+  },
+  infoContainer: {
+    flexWrap: "wrap",
+    flexDirection: "row", // Items will be laid out horizontally
+    width: "100%",
+
+    justifyContent: "space-around", // Evenly distribute space between items
+    alignItems: "center", // Center items vertically
+  },
+  item: {
+    //whiteSpace: "pre-wrap",
+    borderColor: "#28a745", // Dark green border
+    borderWidth: 2, // Width of the border
+    padding: 10, // Padding inside each item
+    backgroundColor: "#d4edda", // Light green background
+    width: "50%", // Width for better spacing
   },
 });
+
+// Function to convert steps to meters
+const stepsToMeters = (steps) => {
+  return steps * 0.8; // Average stride length
+};
