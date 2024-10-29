@@ -13,10 +13,10 @@ const timer = ({ seconds, isRunning, startTimer, stopTimer, resetTimer }) => {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 20,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-
     backgroundColor: "#f5fcff",
   },
   timerText: {

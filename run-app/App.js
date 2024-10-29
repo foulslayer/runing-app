@@ -50,6 +50,10 @@ export default function App() {
       subscription.remove(); // Unsubscribe from pedometer
       setSubscription(null);
     }
+
+    if (video) {
+      video.current.pauseAsync();
+    }
   };
 
   // Reset timer and states
@@ -121,9 +125,20 @@ export default function App() {
         setSeconds((prev) => prev + 1); // Increment seconds
       }, 1000);
     }
-
     return () => clearInterval(interval); // Cleanup on unmount
   }, [isRunning]);
+
+  useEffect(() => {
+    if (isRunning) {
+      if (currentSpeed > 0) {
+        video.current.playAsync(); // Play video if there's movement
+      } else {
+        video.current.pauseAsync(); // Pause video if no movement
+      }
+    } else {
+      video.current.pauseAsync(); // Ensure video pauses if timer is stopped
+    }
+  }, [currentSpeed, isRunning]);
 
   return (
     <View style={styles.container}>
@@ -172,7 +187,7 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     width: "100%",
-    height: 200,
+    height: "50%",
   },
   video: {
     width: "100%",
