@@ -67,7 +67,6 @@ export default function App() {
     setCurrentStepCount(0);
   };
 
-  // Update past step count (last 5 seconds)
   const updatePastStepCount = async () => {
     if (Platform.OS === "ios") {
       const end = new Date(); // Current time
@@ -92,7 +91,7 @@ export default function App() {
   useEffect(() => {
     let interval;
     if (isRunning) {
-      interval = setInterval(updatePastStepCount, 5000); // Update every 5 seconds
+      interval = setInterval(updatePastStepCount, 4000); // Update every 3 seconds
     }
 
     return () => clearInterval(interval);
