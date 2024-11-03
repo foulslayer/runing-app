@@ -52,8 +52,6 @@ export default function Login({ navigation, onLoginSuccess }) {
   return (
     <View style={styles.container}>
       <Text style={styles.titleText}>Login Screen</Text>
-      <Button title="go to the home screen" onPress={pressHandler} />
-
       <Button title="fetch users" onPress={handleButtonPress} />
 
       <TextInput style={styles.input} placeholder="username" value={username} onChangeText={(val) => setUsername(val)} />
@@ -65,12 +63,21 @@ export default function Login({ navigation, onLoginSuccess }) {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 100,
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
+  },
+  input: {
+    height: 40,
+    width: "80%",
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 10,
   },
 });
