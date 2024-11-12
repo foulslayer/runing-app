@@ -4,9 +4,11 @@ import { Pedometer } from "expo-sensors";
 import Timer from "../components/timer";
 import { Video } from "expo-av";
 import runner from "../assets/27756690_MotionElements_runner-enjoy-run-sunny-day_preview.mp4";
+
+import { PanGestureHandler } from "react-native-gesture-handler";
 import Logout from "../components/logout";
 
-export default function App() {
+export default function App({ navigation }) {
   const video = useRef(null);
   const [status, setStatus] = useState({});
 
@@ -141,39 +143,51 @@ export default function App() {
   }, [currentSpeed, isRunning]);
 
   return (
-    <View style={styles.container}>
-      {/* Information Display */}
-      <View style={styles.infoContainer}>
-        <View style={styles.item}>
-          <Text>
-            Distance: {"\n"} {stepsToMeters(currentStepCount).toFixed(0)} m
-          </Text>
+    <PanGestureHandler
+      onGestureEvent={(event) => {
+        const { translationX } = event.nativeEvent;
+        if (translationX < -50) {
+          // Swipe left to go to the next tab
+          navigation.navigate("ScreenOne");
+        }
+      }}
+    >
+      <View style={styles.container}>
+        {/* Information Display */}
+        <View style={styles.infoContainer}>
+          <View style={styles.item}>
+            <Text>
+              Distance: {"\n"} {stepsToMeters(currentStepCount).toFixed(0)} m
+            </Text>
+          </View>
+          <View style={styles.item}>
+            <Text>
+              Average Speed: {"\n"} {averageSpeed.toFixed(2)} km/h
+            </Text>
+          </View>
+          <View style={styles.item}>
+            <Text>
+              Current Speed:{"\n"} {currentSpeed.toFixed(2)} km/h
+            </Text>
+          </View>
+          <View style={styles.item}>
+            <Text>
+              Top Speed: {"\n"} {topspeed.toFixed(2)} km/h
+            </Text>
+          </View>
         </View>
-        <View style={styles.item}>
-          <Text>
-            Average Speed: {"\n"} {averageSpeed.toFixed(2)} km/h
-          </Text>
-        </View>
-        <View style={styles.item}>
-          <Text>
-            Current Speed:{"\n"} {currentSpeed.toFixed(2)} km/h
-          </Text>
-        </View>
-        <View style={styles.item}>
-          <Text>
-            Top Speed: {"\n"} {topspeed.toFixed(2)} km/h
-          </Text>
-        </View>
-      </View>
 
-      {/* Video Player */}
-      <View style={styles.videoContainer}>
-        <Video ref={video} style={styles.video} source={runner} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
+        {/* Video Player */}
+        <View style={styles.videoContainer}>
+          <Video ref={video} style={styles.video} source={runner} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
+        </View>
+
+        <Logout />
+
+        {/* Timer */}
+        <Timer seconds={seconds} isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer} resetTimer={resetTimer} />
       </View>
-      <Logout />
-      {/* Timer */}
-      <Timer seconds={seconds} isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer} resetTimer={resetTimer} />
-    </View>
+    </PanGestureHandler>
   );
 }
 

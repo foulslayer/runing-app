@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button, View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import MyTabs from "./MyTabs";
 import Login from "../screens/login";
 import Home from "../screens/home";
 import { useFocusEffect } from "@react-navigation/native";
@@ -36,7 +37,7 @@ export default function HomeStack() {
       {isAuthenticated ? (
         <Stack.Screen
           name="Home"
-          component={Home}
+          component={MyTabs}
           options={{
             headerRight: () => (
               <Button
