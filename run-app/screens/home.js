@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, View, Button, Platform } from "react-native";
 import { Pedometer } from "expo-sensors";
 import Timer from "../components/timer";
-import { Video } from "expo-av";
+//import { Video } from "expo-av";
 import runner from "../assets/27756690_MotionElements_runner-enjoy-run-sunny-day_preview.mp4";
 
 import { PanGestureHandler } from "react-native-gesture-handler";
@@ -55,7 +55,7 @@ export default function App({ navigation }) {
     }
 
     if (video) {
-      video.current.pauseAsync();
+      //      video.current.pauseAsync();
     }
   };
 
@@ -81,13 +81,13 @@ export default function App({ navigation }) {
         setPastStepCount(pastStepCountResult.steps);
       }
     } else if (Platform.OS === "android") {
-      const stepsTakenInLast5Seconds = currentStepCount - previousStepCount.current;
+      /*  const stepsTakenInLast5Seconds = currentStepCount - previousStepCount.current;
       console.log("Steps taken in last 5 seconds (Android):", stepsTakenInLast5Seconds);
       ("");
       setPastStepCount(stepsTakenInLast5Seconds.steps);
 
       // Update the previous step count for the next interval
-      previousStepCount.current = currentStepCount;
+      previousStepCount.current = currentStepCount;*/
     }
   };
 
@@ -133,12 +133,12 @@ export default function App({ navigation }) {
   useEffect(() => {
     if (isRunning) {
       if (currentSpeed > 0) {
-        video.current.playAsync(); // Play video if there's movement
+        //    video.current.playAsync(); // Play video if there's movement
       } else {
-        video.current.pauseAsync(); // Pause video if no movement
+        //  video.current.pauseAsync(); // Pause video if no movement
       }
     } else {
-      video.current.pauseAsync(); // Ensure video pauses if timer is stopped
+      //  video.current.pauseAsync(); // Ensure video pauses if timer is stopped
     }
   }, [currentSpeed, isRunning]);
 
@@ -177,11 +177,11 @@ export default function App({ navigation }) {
           </View>
         </View>
 
-        {/* Video Player */}
+        {/* Video Player 
         <View style={styles.videoContainer}>
           <Video ref={video} style={styles.video} source={runner} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
         </View>
-
+*/}
         <Logout />
 
         {/* Timer */}

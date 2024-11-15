@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions, ScrollView } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
-import { LineChart } from "react-native-chart-kit"; // React Native compatible LineChart
+import { LineChart } from "react-native-chart-kit";
+import fetchApi from "../hooks/useapi"; // Make sure the path is correct
 
 const rundata = {
-  dates: ["2023-10-01", "2023-10-02", "2023-10-03", "2023-10-04"], // Example dates
-  avgSpeed: [10, 11, 10.5, 11.2], // Example average speed in km/h
-  topSpeed: [12, 13, 13.5, 14], // Example top speed in km/h
+  dates: ["2023-10-01"], // Example dates
+  avgSpeed: [10, 2], // Example average speed in km/h
+  topSpeed: [12.3], // Example top speed in km/h
   Time: [3600, 1800, 900, 1500], // Example dates
   distance: [8000, 5000, 1323, 4000], // Example average speed in km/h
 };
@@ -14,7 +15,47 @@ const rundata = {
 const screenWidth = Dimensions.get("window").width;
 
 function ScreenOne({ navigation }) {
-  return (
+  const [loading, setLoading] = useState(true);
+  const initialData = {
+    distance: [],
+    averagespeed: [],
+    topspeed: [],
+    time: [],
+    date: [],
+  };
+
+  const [historik, setHistorik] = useState(initialData);
+  useEffect(() => {
+    fetchData();
+  }, []); // Empty dependency array means it runs once when the component mounts
+
+  // Function to fetch data
+  const fetchData = async () => {
+    try {
+      const data = await fetchApi("GET", "/historik", {
+        authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJrYXNwZXIiLCJpYXQiOjE3MzE1ODgyOTMsImV4cCI6MTczMTc2MTA5M30.vnddACzfePZnoy0-mjlmlagOUxRUT7ifI8wFm9aDIOI", // Optionally include auth token
+      });
+      const parsedData = {
+        distance: data.map((entry) => entry.distance),
+        averagespeed: data.map((entry) => entry.averagespeed),
+        topspeed: data.map((entry) => entry.topspeed),
+        time: data.map((entry) => entry.time),
+        date: data.map((entry) => new Date(entry.date).toLocaleDateString()), // Format date
+      };
+
+      console.log(" Data:", parsedData);
+      setHistorik(parsedData);
+      setLoading(false);
+    } catch (error) {
+      console.error(" Error:", error);
+      setLoading(false);
+    }
+  };
+  return loading ? (
+    <View>
+      <Text>Loading data...</Text>
+    </View>
+  ) : (
     <PanGestureHandler
       onGestureEvent={(event) => {
         const { translationX } = event.nativeEvent;
@@ -34,13 +75,12 @@ function ScreenOne({ navigation }) {
             <View style={styles.blueView}></View>
             <Text style={styles.text}>average speed</Text>
           </View>
-
           <LineChart
             data={{
-              labels: rundata.dates, // X-axis labels
+              labels: historik.date, // X-axis labels
               datasets: [
-                { data: rundata.avgSpeed, color: () => "rgba(134, 65, 244, 1)", label: "Avg Speed" },
-                { data: rundata.topSpeed, color: () => "rgba(244, 95, 65, 1)", label: "Top Speed" },
+                { data: historik.averagespeed, color: () => "rgba(134, 65, 244, 1)", label: "Avg Speed" },
+                { data: historik.averagespeed, color: () => "rgba(244, 95, 65, 1)", label: "Top Speed" },
               ],
             }}
             width={screenWidth} // Adjust width based on screen size
@@ -78,13 +118,13 @@ function ScreenOne({ navigation }) {
             }}
           />
         </View>
-
         <LineChart
           data={{
-            labels: rundata.dates, // x-axis labels
+            //   labels: rundata.dates, // x-axis labels
+            labels: historik.date, // x-axis labels
             datasets: [
               {
-                data: rundata.distance, // y-axis data points
+                data: historik.distance, // y-axis data points
                 color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // line color
                 strokeWidth: 2,
               },

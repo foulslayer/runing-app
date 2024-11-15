@@ -38,16 +38,16 @@ export default function Login({ navigation, onLoginSuccess }) {
     }
   };
 
-  const handleButtonPress = async () => {
-    try {
-      const data = await fetchApi("GET", "/users", {
-        authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJrYXNwZXIiLCJpYXQiOjE3MzA1MDI5MTgsImV4cCI6MTczMDUxMDExOH0.rmGkyh_GXnzHIxE_eWBp24Hl5LKoGQuKFgqQ9MHpCjM", // Optionally include auth token
-      });
-      console.log("Button Press Data:", data);
-    } catch (error) {
-      console.error("Button Press Error:", error);
-    }
-  };
+    const handleButtonPress = async () => {
+      try {
+        const data = await fetchApi("GET", "/users", {
+          authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJrYXNwZXIiLCJpYXQiOjE3MzA1MDI5MTgsImV4cCI6MTczMDUxMDExOH0.rmGkyh_GXnzHIxE_eWBp24Hl5LKoGQuKFgqQ9MHpCjM", // Optionally include auth token
+        });
+        console.log("Button Press Data:", data);
+      } catch (error) {
+        console.error("Button Press Error:", error);
+      }
+    };
 
   return (
     <View style={styles.container}>
