@@ -37,8 +37,8 @@ function ScreenOne({ navigation }) {
       });
       const parsedData = {
         distance: data.map((entry) => entry.distance),
-        averagespeed: data.map((entry) => entry.averagespeed),
-        topspeed: data.map((entry) => entry.topspeed),
+        averagespeed: data.map((entry) => parseFloat(entry.averagespeed)),
+        topspeed: data.map((entry) => parseFloat(entry.topspeed)),
         time: data.map((entry) => entry.time),
         date: data.map((entry) => new Date(entry.date).toLocaleDateString()), // Format date
       };
@@ -71,7 +71,7 @@ function ScreenOne({ navigation }) {
         <View style={styles.container}>
           <View style={[styles.orange, { flexDirection: "row" }]}>
             <View style={styles.orangeView}></View>
-            <Text style={styles.text}>average speed </Text>
+            <Text style={styles.text}>top speed </Text>
             <View style={styles.blueView}></View>
             <Text style={styles.text}>average speed</Text>
           </View>
@@ -80,7 +80,7 @@ function ScreenOne({ navigation }) {
               labels: historik.date, // X-axis labels
               datasets: [
                 { data: historik.averagespeed, color: () => "rgba(134, 65, 244, 1)", label: "Avg Speed" },
-                { data: historik.averagespeed, color: () => "rgba(244, 95, 65, 1)", label: "Top Speed" },
+                { data: historik.topspeed, color: () => "rgba(244, 95, 65, 1)", label: "Top Speed" },
               ],
             }}
             width={screenWidth} // Adjust width based on screen size
