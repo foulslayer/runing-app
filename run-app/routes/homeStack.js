@@ -36,7 +36,7 @@ export default function HomeStack() {
     <Stack.Navigator>
       {isAuthenticated ? (
         <Stack.Screen
-          name="Home"
+          name=" "
           component={MyTabs}
           options={{
             headerRight: () => (

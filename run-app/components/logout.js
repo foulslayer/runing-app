@@ -18,7 +18,6 @@ const Logout = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titleText}>Home Screen</Text>
       <Button title="Logout" onPress={handleLogout} />
     </View>
   );

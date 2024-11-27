@@ -3,12 +3,22 @@ import { StyleSheet, Text, View, Button, Platform } from "react-native";
 import { Pedometer } from "expo-sensors";
 import Timer from "../components/timer";
 import { Video } from "expo-av";
-import runner from "../assets/27756690_MotionElements_runner-enjoy-run-sunny-day_preview.mp4";
+import femalerunner from "../assets/27756690_MotionElements_runner-enjoy-run-sunny-day_preview.mp4";
+import malerunner from "../assets/8380510-uhd_1440_2560_25fps.mp4";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Logout from "../components/logout";
+import { useVideo } from "../hooks/usevideo";
 
 export default function App({ navigation }) {
+  //const [videoSource, setvideoSource] = useState(false);
+  /*const changeVideoSource = (source) => {
+    setvideoSource(source);
+  };*/
+
+  const { videoSource, setVideoSource } = useVideo();
+
   const video = useRef(null);
   const [status, setStatus] = useState({});
 
@@ -142,18 +152,62 @@ export default function App({ navigation }) {
     }
   }, [currentSpeed, isRunning]);
 
+  /*{
+    useEffect(() => {
+      const getVideoSource = async () => {
+        try {
+          const source = await AsyncStorage.getItem("videoSource");
+          if (source === "malerunner") {
+            changeVideoSource(malerunner);
+          } else if (source === "femalerunner") {
+            changeVideoSource(femalerunner);
+          }
+          //  changeVideoSource(malerunner);
+        } catch (e) {
+          console.error("Failed to fetch video source", e);
+        }
+      };
+      getVideoSource();
+    }, [navigation]);
+  }*/
+  const [tempVideoSource, setTempVideoSource] = useState(null);
+
+  useEffect(() => {
+    const checkVideoSourceChanges = setInterval(async () => {
+      const storedSource = await AsyncStorage.getItem("videoSource");
+
+      if (storedSource != videoSource) {
+        setTempVideoSource(JSON.parse(storedSource));
+      }
+    }, 1000);
+
+    return () => clearInterval(checkVideoSourceChanges);
+  }, []);
+
   return (
     <PanGestureHandler
       onGestureEvent={(event) => {
         const { translationX } = event.nativeEvent;
         if (translationX < -50) {
           // Swipe left to go to the next tab
-          navigation.navigate("ScreenOne");
+          navigation.navigate("statistik");
         }
       }}
     >
       <View style={styles.container}>
         {/* Information Display */}
+        {/* Video Player */}
+        <View style={styles.videoContainer}>
+          <Video
+            ref={video}
+            style={styles.video}
+            source={videoSource ? { uri: tempVideoSource } : null} // Use require for local assets
+            useNativeControls
+            isLooping
+            onPlaybackStatusUpdate={setStatus}
+            shouldPlay
+          />
+        </View>
         <View style={styles.infoContainer}>
           <View style={styles.item}>
             <Text>
@@ -177,13 +231,6 @@ export default function App({ navigation }) {
           </View>
         </View>
 
-        {/* Video Player */}
-        <View style={styles.videoContainer}>
-          <Video ref={video} style={styles.video} source={runner} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
-        </View>
-
-        <Logout />
-
         {/* Timer */}
         <Timer seconds={seconds} isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer} resetTimer={resetTimer} />
       </View>
@@ -193,7 +240,6 @@ export default function App({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
