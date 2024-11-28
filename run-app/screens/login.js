@@ -1,5 +1,5 @@
 // screens/login.js
-
+import signup from "../screens/signup"; // Import the Signup screen
 import { StyleSheet, Text, View, Button, TextInput, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -12,7 +12,7 @@ export default function Login({ navigation, onLoginSuccess }) {
   const [password, setPassword] = useState("");
 
   const pressHandler = () => {
-    navigation.navigate("Home");
+    navigation.navigate("Signup");
   };
 
   const handleLogin = async () => {
@@ -38,25 +38,30 @@ export default function Login({ navigation, onLoginSuccess }) {
     }
   };
 
-    const handleButtonPress = async () => {
-      try {
-        const data = await fetchApi("GET", "/users", {
-          authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJrYXNwZXIiLCJpYXQiOjE3MzA1MDI5MTgsImV4cCI6MTczMDUxMDExOH0.rmGkyh_GXnzHIxE_eWBp24Hl5LKoGQuKFgqQ9MHpCjM", // Optionally include auth token
-        });
-        console.log("Button Press Data:", data);
-      } catch (error) {
-        console.error("Button Press Error:", error);
-      }
-    };
+  const handleButtonPress = async () => {
+    try {
+      const data = await fetchApi("GET", "/users", {
+        authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJrYXNwZXIiLCJpYXQiOjE3MzA1MDI5MTgsImV4cCI6MTczMDUxMDExOH0.rmGkyh_GXnzHIxE_eWBp24Hl5LKoGQuKFgqQ9MHpCjM", // Optionally include auth token
+      });
+      console.log("Button Press Data:", data);
+    } catch (error) {
+      console.error("Button Press Error:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titleText}>Login Screen</Text>
       <Button title="fetch users" onPress={handleButtonPress} />
 
+      <Text style={styles.titleText}>username</Text>
       <TextInput style={styles.input} placeholder="username" value={username} onChangeText={(val) => setUsername(val)} />
+      <Text style={styles.titleText}>password</Text>
       <TextInput style={styles.input} placeholder="password" secureTextEntry value={password} onChangeText={(val) => setPassword(val)} />
       <Button title="Log In" onPress={handleLogin} />
+      <View>
+        <Button title="Sign Up" onPress={pressHandler} />
+      </View>
     </View>
   );
 }
@@ -69,7 +74,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   titleText: {
-    fontSize: 24,
+    fontSize: 18,
+    width: "80%",
     fontWeight: "bold",
   },
   input: {

@@ -176,7 +176,9 @@ export default function App({ navigation }) {
     const checkVideoSourceChanges = setInterval(async () => {
       const storedSource = await AsyncStorage.getItem("videoSource");
 
-      if (storedSource != videoSource) {
+      if (storedSource && storedSource !== videoSource) {
+        // console.log("Video source changed:", storedSource);
+        // console.log("Current video source:", videoSource);
         setTempVideoSource(JSON.parse(storedSource));
       }
     }, 1000);
@@ -198,15 +200,7 @@ export default function App({ navigation }) {
         {/* Information Display */}
         {/* Video Player */}
         <View style={styles.videoContainer}>
-          <Video
-            ref={video}
-            style={styles.video}
-            source={videoSource ? { uri: tempVideoSource } : null} // Use require for local assets
-            useNativeControls
-            isLooping
-            onPlaybackStatusUpdate={setStatus}
-            shouldPlay
-          />
+          <Video ref={video} style={styles.video} source={tempVideoSource ? { uri: tempVideoSource } : null} useNativeControls isLooping onPlaybackStatusUpdate={setStatus} shouldPlay />
         </View>
         <View style={styles.infoContainer}>
           <View style={styles.item}>

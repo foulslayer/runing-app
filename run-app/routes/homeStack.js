@@ -4,6 +4,7 @@ import { Button, View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MyTabs from "./MyTabs";
 import Login from "../screens/login";
+import Signup from "../screens/signup";
 import Home from "../screens/home";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -16,6 +17,7 @@ export default function HomeStack() {
 
   const checkToken = async () => {
     const token = await AsyncStorage.getItem("token");
+    console.log("Token:", token);
     setIsAuthenticated(!!token); // Set `true` if token exists, `false` otherwise
   };
 
@@ -36,7 +38,7 @@ export default function HomeStack() {
     <Stack.Navigator>
       {isAuthenticated ? (
         <Stack.Screen
-          name=" "
+          name="Home"
           component={MyTabs}
           options={{
             headerRight: () => (
@@ -51,7 +53,10 @@ export default function HomeStack() {
           }}
         />
       ) : (
-        <Stack.Screen name="Login">{(props) => <Login {...props} onLoginSuccess={checkToken} />}</Stack.Screen>
+        <>
+          <Stack.Screen name="Login">{(props) => <Login {...props} onLoginSuccess={checkToken} />}</Stack.Screen>
+          <Stack.Screen name="Signup" component={Signup} />
+        </>
       )}
     </Stack.Navigator>
   );

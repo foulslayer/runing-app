@@ -1,6 +1,6 @@
 //const apiUrl = "http://localhost:3000/"; // Include http://
 //const apiUrl = "http://192.168.0.31:3000";
-const apiUrl = "http://10.71.104.173:3000";
+const apiUrl = "http://10.71.104.175:3000";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE"; // Add other methods as needed
 
